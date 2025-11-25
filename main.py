@@ -101,8 +101,41 @@ def res_block(X, filter, stage):
     f1,f2,f3 = filter
 
     #Main Path
-    X=Conv2D(f1, (1,1), strides=(1,1), name= "res_"+str(stage)+"_conv_a", kernel_initializer=glorot_uniform(seed=0))(X)
+    X=Conv2D(f1, kernel_size=(1,1), strides=(1,1), name= "res_"+str(stage)+"_conv_a", kernel_initializer=glorot_uniform(seed=0))(X)
     X=MaxPooling2D((2,2))(X)
     X= BatchNormalization(axis=3, name= "bn_"+str(stage)+"_conv_b")(X)
     X=Activation("relu")(X)
 
+    X=Conv2D(f2, kernel_size=(3,3), strides=(1,1), padding="same", name="res_"+str(stage)+"_conv_b", kernel_initializer=glorot_uniform(seed=0))(X)
+    X=BatchNormalization(axis=3, name="bn_"+str(stage)+"_conv_b")(X)
+    X=Activation("relu")(X)
+
+    X=Conv2D(f3, kernel_size=(1,1), strides=(1,1), name="res_"+str(stage)+"_conv_c", kernel_initializer=glorot_uniform(seed=0))(X)
+    X=BatchNormalization(axis=3, name="bn_"+str(stage)+"_conv_c")
+
+    #Short Path
+    X_copy=Conv2D(f3, kernel_size=(1,1), strides=(1,1), name ="res_"+str(stage)+"_conv_copy", kernel_initializer=glorot_uniform(seed=0))(X_copy)
+    X_copy=MaxPooling2D((2,2))(X_copy)
+    X_copy=BatchNormalization(axis=3, name="bn_"+str(stage)+"_conv_copy")(X_copy)
+
+    X=Add()([X,X_copy])
+    X=Activation("relu")(X)
+
+    #Identity block 1
+
+    X = Conv2D(f1, kernel_size=(1, 1), strides=(1, 1), name="res_" + str(stage) + "_identity_1_a",
+               kernel_initializer=glorot_uniform(seed=0))(X)
+    X = BatchNormalization(axis=3, name="bn_" + str(stage) + "_identity_1_a")(X)
+    X = Activation("relu")(X)
+
+    X = Conv2D(f2, kernel_size=(3, 3), strides=(1, 1), padding="same", name="res_" + str(stage) + "_identity_1_b",
+               kernel_initializer=glorot_uniform(seed=0))(X)
+    X = BatchNormalization(axis=3, name="bn_" + str(stage) + "_identity_1_b")(X)
+    X = Activation("relu")(X)
+
+    X = Conv2D(f3, kernel_size=(1, 1), strides=(1, 1), name="res_" + str(stage) + "_identity_1_c",
+               kernel_initializer=glorot_uniform(seed=0))(X)
+    X = BatchNormalization(axis=3, name="bn_" + str(stage) + "_identity_1_c")
+
+    X = Add()([X, X_copy])
+    X = Activation("relu")(X)
