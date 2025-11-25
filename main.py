@@ -122,6 +122,7 @@ def res_block(X, filter, stage):
     X=Activation("relu")(X)
 
     #Identity block 1
+    X_copy=X
 
     X = Conv2D(f1, kernel_size=(1, 1), strides=(1, 1), name="res_" + str(stage) + "_identity_1_a",
                kernel_initializer=glorot_uniform(seed=0))(X)
@@ -136,6 +137,26 @@ def res_block(X, filter, stage):
     X = Conv2D(f3, kernel_size=(1, 1), strides=(1, 1), name="res_" + str(stage) + "_identity_1_c",
                kernel_initializer=glorot_uniform(seed=0))(X)
     X = BatchNormalization(axis=3, name="bn_" + str(stage) + "_identity_1_c")
+
+    X = Add()([X, X_copy])
+    X = Activation("relu")(X)
+
+    #Identity block 2
+    X_copy=X
+
+    X = Conv2D(f1, kernel_size=(1, 1), strides=(1, 1), name="res_" + str(stage) + "_identity_2_a",
+               kernel_initializer=glorot_uniform(seed=0))(X)
+    X = BatchNormalization(axis=3, name="bn_" + str(stage) + "_identity_2_a")(X)
+    X = Activation("relu")(X)
+
+    X = Conv2D(f2, kernel_size=(3, 3), strides=(1, 1), padding="same", name="res_" + str(stage) + "_identity_2_b",
+               kernel_initializer=glorot_uniform(seed=0))(X)
+    X = BatchNormalization(axis=3, name="bn_" + str(stage) + "_identity_2_b")(X)
+    X = Activation("relu")(X)
+
+    X = Conv2D(f3, kernel_size=(1, 1), strides=(1, 1), name="res_" + str(stage) + "_identity_2_c",
+               kernel_initializer=glorot_uniform(seed=0))(X)
+    X = BatchNormalization(axis=3, name="bn_" + str(stage) + "_identity_2_c")
 
     X = Add()([X, X_copy])
     X = Activation("relu")(X)
