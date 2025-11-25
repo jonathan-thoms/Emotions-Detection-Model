@@ -5,6 +5,21 @@ import numpy as np
 import pandas as pd
 from click.core import augment_usage_errors
 from matplotlib.pyplot import figure
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras.applications import DenseNet121
+from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.initializers import glorot_uniform
+from tensorflow.keras.utils import plot_model
+from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping, ModelCheckpoint, LearningRateScheduler
+from IPython.display import display
+from tensorflow.python.keras import *
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras import layers, optimizers
+from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras.layers import *
+from tensorflow.keras import backend as K
+from keras import optimizers
 
 keyfacial_df=pd.read_csv('data/data.csv')
 
@@ -77,3 +92,17 @@ y=np.asarray(y).astype(np.float32)
 
 #splitting
 X_train, X_test, y_train, y_test= train_test_split(X, y, test_size=0.2)
+
+
+def res_block(X, filter, stage):
+
+    #Conv Block
+    X_copy = X
+    f1,f2,f3 = filter
+
+    #Main Path
+    X=Conv2D(f1, (1,1), strides=(1,1), name= "res_"+str(stage)+"_conv_a", kernel_initializer=glorot_uniform(seed=0))(X)
+    X=MaxPooling2D((2,2))(X)
+    X= BatchNormalization(axis=3, name= "bn_"+str(stage)+"_conv_b")(X)
+    X=Activation("relu")(X)
+
